@@ -6,6 +6,10 @@
 **Normative language:** **MUST**, **MUST NOT**, **SHOULD**, and **MAY** are requirements levels.  
 **Boundary:** this document specifies contracts and behavior, not production implementation.
 
+**Hardening requirements:** [RELIABILITY_SECURITY.md](RELIABILITY_SECURITY.md) defines mandatory controls H01–H20, their owning tasks, and acceptance evidence. Its explicit corrections govern older illustrative examples in this SDD. These are design requirements, not implemented security or reliability claims.
+
+**Implementation status (2026-09-16):** a compilable blank Compose shell exists in `android-client`; full Task 1 acceptance remains incomplete. See [the handoff guide](IMPLEMENTATION_HANDOFF.md) for evidence, remaining work, and contract gaps. [BACKLOG.md](BACKLOG.md) follows section 5 and replaces the earlier conflicting sequence. Android build/module paths below are relative to `android-client`; backend, repository documentation, and CI paths are repository-relative.
+
 ## 0. Decisions, assumptions, and hard boundaries
 
 | ID | Decision |
@@ -16,7 +20,7 @@
 | D-04 | Every external action is executed with documented Android APIs: explicit/package-scoped intents, verified App Links, registered deep links, or system contract intents. The target app or Android owns the confirmation UI. |
 | D-05 | A language model may propose a typed action, but it can never execute one. `ActionPolicyGate` validates it against a versioned allowlist and `PackageManager` before user confirmation. |
 | D-06 | Sending, purchasing, deleting, calling, sharing sensitive data, or committing a calendar event is never silent. Project Zero opens a target-owned/system confirmation surface. |
-| D-07 | Cloud Run is stateless. Durable server data is pseudonymous, encrypted, region-pinned, TTL-bound, and excludes notification bodies unless the user opted in for that request. |
+| D-07 | Cloud Run compute is stateless; durable admission/idempotency state uses transactional persistence. Server data is pseudonymous, encrypted, region-pinned, and TTL-bound. Only eligible redacted content may be uploaded after consent; consent never authorizes raw notification upload. |
 | D-08 | No general-purpose plugin can supply an arbitrary URI. A signed, versioned deep-link registry is data, not executable code; its parameters are encoded by typed builders. |
 | D-09 | Notification summaries are assistive and lossy. The original notification remains authoritative and is opened through its creator-supplied `PendingIntent` only after a user gesture. |
 
@@ -87,6 +91,7 @@ sequenceDiagram
   participant C as ClusterReducer
   participant V as Local vector/cache store
   participant B as Cloud Run API
+  participant SC as Server cache
   participant M as Vertex AI
   participant UI as Compose UI
 
@@ -102,7 +107,7 @@ sequenceDiagram
   else cloud eligible AND opt-in AND network/budget available
     F->>B: POST /v1/summary:batch (redacted fields, nonce, deadline)
     B->>B: authenticate, replay check, quota, schema validation
-    B->>V: conceptual cache lookup by pseudonymous fingerprint
+    B->>SC: installation-scoped template lookup
     alt cache miss
       B->>M: constrained JSON generation
       M-->>B: candidate clusters
@@ -118,7 +123,7 @@ sequenceDiagram
   UI->>UI: render; redact on lock screen
 ```
 
-**Ordering rule:** each package/user tuple has a monotonically increasing local `revision`. A cloud result is applied only when all referenced events still exist and `response.baseRevision == currentRevision`; otherwise it is discarded or re-requested. Notification removal tombstones the event and removes it from clusters. Duplicate callbacks are idempotent by `eventId`.
+**Ordering rule:** event revision tracks one notification lifecycle; a separate persistent personal-profile snapshotRevision advances for every accepted notification mutation. Request/response baseRevision refers to the snapshot. Pending requestId is bound locally to dataEpoch and snapshotRevision; apply only if both remain current and every member remains live and eligible. Removal invalidates membership/work; erase or revocation advances dataEpoch. Reposts after removal receive a new eventId. See H02 for duplicate and reconnect behavior.
 
 ### 1.3 User-intent-to-external-action sequence
 
@@ -194,9 +199,10 @@ sequenceDiagram
 | `RESOLVED` | policy denies | terminal `REJECTED` | Emit stable reason code. |
 | `RESOLVED` | policy allows | `PREVIEWED` | Compute digest over canonical action and render it. |
 | `PREVIEWED` | edit/back/timeout/lock | terminal `CANCELLED` | Invalidate proposal; no launch. |
-| `PREVIEWED` | user confirms and all execution guards pass | `EXECUTING` | Resolve once more, then launch exactly once. |
+| `PREVIEWED` | user confirms and all execution guards pass | `EXECUTING` | Resolve once more, consume confirmation atomically, then attempt launch at most once. |
 | `EXECUTING` | `startActivity` accepted | terminal `HANDED_OFF` | Record non-sensitive outcome only. |
 | `EXECUTING` | resolution/security failure | terminal `FAILED_SAFE` | Do not try a broader implicit intent automatically. |
+| `EXECUTING` | launch outcome cannot be established | terminal `OUTCOME_UNKNOWN` | No automatic replay; a new explicit user request is required. |
 
 All transitions are compare-and-set by `eventId+revision` or `actionId`. Terminal states cannot transition. Process restoration may restore `PUBLISHED` display data but MUST NOT restore a `PREVIEWED` action as executable; the user must reissue it.
 
@@ -320,7 +326,7 @@ interface ActionExecutor { suspend fun execute(action: IntentAction, previewDige
 
 ### 2.2 JSON Schema: notification summary request/response
 
-The canonical wire encoding is UTF-8 JSON, camelCase, RFC 3339 timestamps in headers only, and integer epoch milliseconds in bodies. Unknown fields are ignored on read; missing required fields fail with `INVALID_ARGUMENT`. Bodies are limited to 64 KiB compressed and 256 KiB expanded.
+The canonical REST encoding is UTF-8 JSON, camelCase, and integer epoch milliseconds in bodies. Requests and model outputs reject unknown fields. Compatible response readers may ignore unknown non-executable envelope metadata, but action/slot objects remain closed. Missing required values fail validation. Server responses must satisfy the current strict producer schema shown below. Authentication appears only in headers/metadata. Bodies are limited to 64 KiB compressed and 256 KiB expanded, enforced during streaming. H04 defines presence, numeric, and REST/protobuf equivalence rules.
 
 ```json
 {
@@ -329,11 +335,10 @@ The canonical wire encoding is UTF-8 JSON, camelCase, RFC 3339 timestamps in hea
   "title": "SummaryBatchRequest",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "requestId", "installationToken", "baseRevision", "locale", "events"],
+  "required": ["schemaVersion", "requestId", "baseRevision", "locale", "events"],
   "properties": {
     "schemaVersion": { "const": 1 },
     "requestId": { "type": "string", "format": "uuid" },
-    "installationToken": { "type": "string", "minLength": 20, "maxLength": 2048 },
     "baseRevision": { "type": "integer", "minimum": 1 },
     "locale": { "type": "string", "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$" },
     "events": {
@@ -455,7 +460,7 @@ Cloud reasoning returns slots, never `androidAction`, package, deep link, or exe
 | Intent parsing | `POST /v1/intents:route` | `ReasoningService.RouteIntent` | 2.5 s client / 2 s server | `requestId`, retained 10 min |
 | Registry manifest | `GET /v1/registry?version=` | `RegistryService.GetRegistry` | 3 s | ETag/version |
 
-Required headers: `Authorization: Bearer <installation-token>`, `X-Request-Id`, `X-Schema-Version: 1`, `X-Client-Version`, `X-Nonce`, and `Content-Encoding: gzip` when compressed. The server returns `Cache-Control: no-store` for reasoning, `X-Trace-Id`, and a `usage` object. It MUST NOT log authorization, nonce, raw text, slots, titles, bodies, or URIs.
+Required headers: `Authorization: Bearer <installation-token>`, `X-Request-Id`, `X-Schema-Version: 1`, `X-Client-Version`, `X-Nonce`, `X-Sent-At` (RFC 3339 UTC), and `Content-Encoding: gzip` when compressed. Nonces/timestamps identify bounded-age transport attempts; requestId identifies an idempotent logical operation. H09–H10 govern authentication, replay, and durable reservations. Reasoning responses use `Cache-Control: no-store` and `X-Trace-Id`; summary responses include `usage` as defined below, and route usage is maintained in the server ledger. Never log authorization, nonce, raw text, slots, titles, bodies, or URIs. Protobuf below is illustrative: Task 1 must complete registry messages and typed presence validation under H04 before claiming contract conformance.
 
 ```proto
 syntax = "proto3";
@@ -508,11 +513,22 @@ message IntentRouteResponse {
   int32 schema_version = 1;
   string request_id = 2;
   string capability = 3;
-  map<string, string> slots = 4;
+  IntentSlots slots = 4;
   repeated string missing_slots = 5;
   double confidence = 6;
 }
 message Usage { bool cache_hit = 1; int32 input_tokens = 2; int32 output_tokens = 3; }
+
+message IntentSlots {
+  optional string recipient_token = 1;
+  optional string message = 2;
+  optional string destination = 3;
+  optional string title = 4;
+  optional int64 start_epoch_ms = 5;
+  optional int64 end_epoch_ms = 6;
+  optional string zone_id = 7;
+  optional string query = 8;
+}
 ```
 
 REST error body and gRPC mapping:
@@ -526,10 +542,14 @@ REST error body and gRPC mapping:
 | 400 | `INVALID_ARGUMENT` | `SCHEMA_INVALID` | Do not retry; local fallback; metric only. |
 | 401/403 | `UNAUTHENTICATED`/`PERMISSION_DENIED` | `AUTH_FAILED` | Refresh once; then local fallback. |
 | 409 | `ABORTED` | `STALE_REVISION` | Rebuild once from current local state. |
+| 409 | `ALREADY_EXISTS` | `CONFLICT` | Same operation ID with different payload; do not retry with that ID. |
 | 429 | `RESOURCE_EXHAUSTED` | `RATE_LIMITED` | Honor delay; local fallback; open circuit after 3. |
+| 429 | `RESOURCE_EXHAUSTED` | `BUDGET_EXHAUSTED` | Local fallback; do not retry until the next admitted budget window. |
 | 5xx | `UNAVAILABLE` | `UPSTREAM_UNAVAILABLE` | Jittered retry once within deadline, then local fallback. |
 
-Auth bootstrap uses a Play Integrity-backed installation registration. The backend exchanges a valid verdict for a scoped token lasting at most 24 hours. Tokens identify a random installation, not an account, advertising ID, phone number, or hardware identifier. Key rotation and account sync are separate future protocols.
+Any retry above reuses the logical requestId and obeys H10. A timeout with uncertain provider dispatch never causes another inference merely because a transport retry is allowed. Validation/privacy denial, unsupported schema/locale, clock skew, cancellation, and uncertain outcome require stable reason codes in Task 1's closed error taxonomy and equivalent REST/gRPC behavior.
+
+Auth bootstrap uses challenge-bound, server-verified Play Integrity registration. Scoped tokens last at most 15 minutes, identify a random installation, and include issuer/audience/expiry and revocation checks. Renewal is rate-limited. The public entry point validates application tokens; private service calls use workload IAM identity. H09 makes key rotation/revocation a v1 requirement; account sync remains future scope. Integrity failure disables cloud, never the local launcher.
 
 ---
 
@@ -537,22 +557,22 @@ Auth bootstrap uses a Play Integrity-backed installation registration. The backe
 
 ### 3.1 Deterministic resolution algorithm
 
-1. Normalize Unicode (NFKC), locale, whitespace, and speech punctuation; do not lowercase parameter values.
+1. Create a normalized parsing view using Unicode (NFKC), locale, whitespace, and speech punctuation; preserve original message/parameter text separately so normalization does not rewrite user content.
 2. Match the versioned local grammar and entity extractors. Required slots and allowable parameter types come from the capability table below.
 3. Return clarification if a required slot is absent, time is ambiguous, recipient match is not unique, or top-two capability scores differ by `< 0.12`.
-4. Accept a local candidate at confidence `>= 0.82`. Cloud MAY parse at `0.55..0.819` only when section 4 permits it. Below `0.55`, return `Unsupported`.
+4. For supported grammar, accept a fully specified local candidate at confidence `>= 0.82`; `0.55..0.819` may use cloud under all section 4 gates; below `0.55`, clarify/reject. For unsupported local grammar, a cloud route requires independently validated on-device redaction and cloud support for that locale. H05 defines precedence and calibration.
 5. Build candidates exclusively from the signed registry and Android system-contract builders. Never concatenate model text into a URI. Apply `Uri.Builder`, percent encoding, length limits, and scheme/host/path allowlists.
 6. Query `PackageManager` using narrowly declared `<queries>` entries. Reject disabled, non-exported, signature-mismatched (where pinned), or unresolvable activities.
 7. Rank: user-pinned capable app; then registry-compatible affinity score; then single verified handler; then system generic intent; finally Android chooser. A tie within `0.05` always uses the chooser.
 8. Validate through `ActionPolicyGate`, show an immutable preview, collect confirmation where specified, then resolve again immediately before launch.
-9. Record only capability, selected package, outcome, and coarse latency. Never record message, recipient, destination, query, or full URI.
+9. Record only capability, outcome, and coarse latency in telemetry. Package affinity may be stored privately on-device, but selected package is not a telemetry dimension. Never record message, recipient, destination, query, or full URI.
 
 ### 3.2 Capability matrix
 
 | Natural-language intent | Required slots | Primary documented contract | Package/deep-link rule | Fallback | Confirmation and failure behavior |
 |---|---|---|---|---|---|
 | “Message Maya ‘late by 10’” | unique recipient, body | `ACTION_SENDTO` with `smsto:` for SMS; registered provider deep link for WhatsApp-like apps | Provider entry must declare exact package, scheme/host/path template, and typed slot mapping. No generic `ACTION_SEND` when a recipient is required. | `smsto:` system handler, then chooser | Always preview recipient/body. Target app owns Send. Ambiguous contact => clarify. |
-| “Text this photo to Maya” | unique recipient, content URI | `ACTION_SEND` + one-time `FileProvider` URI grant and MIME type | Only handlers returned for MIME type; never expose filesystem paths. | Android chooser | Preview recipient/app/attachment; target owns Send. Revoke grant after task/timeout. |
+| “Text this photo to Maya” | content URI; recipient intent clarified | `ACTION_SEND` + bounded `FileProvider` read grant and MIME type | Only handlers returned for MIME type; generic sharing cannot guarantee recipient addressing. | Android chooser | Preview attachment; target owns recipient selection and Send unless a documented provider contract supports addressing. Grant lifetime follows the tested consumption contract (H03/H13). |
 | “Navigate to 21 Market Street” | destination | `ACTION_VIEW` with encoded `geo:0,0?q=…`, or verified provider navigation link | Prefer pinned capable map; coordinates permitted only after local/system geocoding policy. | Generic `geo:` then chooser | Preview destination. No cloud location history. No handler => copy destination offer. |
 | “Add dentist tomorrow at 3 for an hour” | title, unambiguous start, end/duration, zone | `CalendarContract.ACTION_INSERT` with `Events.CONTENT_URI` and documented extras | System calendar-capable handlers only; do not write provider directly in v1. | None | Preview interpreted absolute date/time/zone. Calendar UI owns Save. Ambiguous DST/date => clarify. |
 | “Call Maya” | unique phone target | `ACTION_DIAL` with `tel:` | Dialer handler; never request direct-call permission for v1. | System dialer | Preview number/contact alias; dialer owns Call. Emergency-like input routes to dialer with warning, never automated. |
@@ -576,14 +596,14 @@ Evaluate top to bottom; the first terminal rule wins.
 
 | Priority | Condition | Route |
 |---:|---|---|
-| 1 | User disabled cloud, notification access is absent, device policy disallows processing, app is in local-only list, or sensitivity is `SECRET` | Local only; never enqueue upload. |
+| 1 | User disabled cloud, notification access is absent for a notification operation, device policy disallows processing, app is in local-only list, or sensitivity is `SECRET` | Local only; never enqueue upload. User-entered intents do not require notification access. |
 | 2 | Content matches OTP/auth code, financial amount/account, health, precise location, password/secret, minors policy, or managed-profile boundary | Local deterministic handling; cloud prohibited even if generally opted in. |
 | 3 | Action is `DIAL`, `OPEN_APP`, exact local contact match, exact local grammar, or system contract with confidence `>= 0.82` | Local. |
 | 4 | Summary fingerprint or intent-template embedding has a valid local cache hit with cosine similarity `>= 0.94` and same locale/model-policy version | Local cached result after membership/slot revalidation. |
 | 5 | Network is unmetered or user allowed metered; battery is not critically low; cloud opt-in is active; circuit is closed; daily budget remains; redaction succeeds; and complexity trigger below is true | Cloud. |
 | 6 | Any prerequisite fails or deadline would exceed UI budget | Local fallback or clarification; never wait indefinitely. |
 
-**Complexity trigger:** cloud is justified only for (a) 4+ related events requiring cross-event abstraction, (b) local router confidence `0.55..0.819`, (c) multi-clause temporal reasoning, or (d) unsupported local language with a supported cloud locale. One notification, one obvious system command, or a cacheable repeated pattern stays local.
+**Complexity trigger:** cloud is justified only for (a) 4+ related events requiring abstraction, (b) supported-grammar confidence `0.55..0.819`, (c) temporal reasoning that still satisfies H05 confidence rules, or (d) unsupported local grammar with separately validated on-device redaction and cloud support. No trigger overrides privacy, consent, ambiguity, or budget gates. One obvious command or valid cache hit stays local.
 
 **Redaction:** before upload replace contact identities, phone/email, URLs, precise addresses, account/order IDs, and free-form unique numbers with stable request-scoped placeholders (`<PERSON_1>`). The response is rehydrated only for display slots that existed in the request; the model cannot invent placeholder IDs. If redaction confidence is below `0.98`, cloud routing is denied.
 
@@ -593,19 +613,19 @@ Evaluate top to bottom; the first terminal rule wins.
 |---|---|---|---|
 | Device exact | `HMAC(installSalt, normalized content + locale + policyVersion)` | validated summary/route template | 7 days; LRU 20 MiB |
 | Device vector | quantized local embedding + locale + capability | template ID and non-sensitive structural slots | 30 days; LRU 10,000 entries |
-| Server exact | `HMAC(serverPepper, redacted canonical payload + modelVersion + policyVersion)` | validated JSON response | 24 h; max 64 KiB/value |
-| Server semantic | quantized embedding of fully redacted template | response skeleton, no user values | 7 days; per-language namespace |
+| Server exact | installation/consent epoch + HMAC of normalized redacted structure and all relevant versions | validated template; current request IDs rebuilt on hit | 24 h; max 64 KiB/value |
+| Server semantic | curated public template embedding + locale/version | public template skeleton only; no user-learned cross-installation reuse | 7 days; per-language namespace |
 
-Cache values never contain rehydrated PII. Exact cache hits still validate event membership, expiry, required slots, and current policy. Semantic hits require cosine similarity `>= 0.94`; action routes also require identical capability and required-slot bitmap. Invalidate on model/prompt/policy/registry version change, locale change, notification removal, user erase, or safety-rule update. Rotate install salt on erase/reinstall; rotate server pepper quarterly while accepting the previous pepper for at most 24 hours.
+Template caches never contain rehydrated PII, executable actions, or reusable request/event/cluster IDs. Rebuild IDs and placeholder bindings from each current request. Exact hits revalidate membership, expiry, slots, and policy. Semantic hits require calibrated similarity `>=0.94`, capability/slot agreement, and full local validation; similarity grants no authority. H06 defines installation/profile/epoch partitioning and all version keys. Invalidate on relevant version/locale/source/erase changes. Rotate install salt on erase/reinstall and server pepper quarterly, with at most 24 hours of prior-pepper overlap. Rehydrated local display summaries remain subject to H07 retention.
 
 ### 4.3 Cost envelope: `< $0.002 / active user / day`
 
-This is an enforced budget, not a prediction tied to a particular model price:
+This is a measured total-cost objective supported by enforced admission budgets, not a guarantee about the final cloud invoice. H10–H11 define atomic reservations, uncertain provider outcomes, installation-day accounting, fleet limits, fixed costs, and pricing changes:
 
-* Client daily cloud allowance: at most **2 summary batches + 2 route requests**, coalesced over 30 seconds.
+* Daily cloud allowance: at most **2 summary batches + 2 route requests**, enforced on the server as well as the client. Only summaries use opportunistic 30-second coalescing; interactive routes use their own deadlines.
 * Server token allowance: **4,000 input + 600 output tokens/user/day** after cache hits. Per request: 1,200 input/200 output maximum.
 * Hard monetary ledger: reserve **$0.0016** for inference, **$0.0002** for Cloud Run/egress/cache, and **$0.0002** safety margin. The pricing adapter computes projected cost from current configured model/SKU prices before dispatch.
-* If `spent + projected > $0.0018`, server returns `BUDGET_EXHAUSTED`; client uses local fallback until the installation’s UTC-day reset. Global kill switch lowers allowances when the rolling seven-day p95 exceeds target.
+* If `spent + outstandingReservations + projected > $0.0018`, or fleet admission fails, return `BUDGET_EXHAUSTED`; use local fallback. Reserve atomically before provider dispatch and settle conservatively under H10. Reset by server UTC day. A global kill switch lowers allowances when measured cost exceeds the approved envelope.
 * Target cache rates: >=70% exact/semantic hit for summaries and >=85% local resolution for actions. Dashboards use aggregate counts only.
 
 `cost = inputTokens*configuredInputRate + outputTokens*configuredOutputRate + allocatedPlatformCost`. Release is blocked unless a load replay using the current price configuration has mean `< $0.002` and p95 `< $0.004` per active-user day. This makes the constraint testable despite price/model changes.
@@ -614,7 +634,7 @@ This is an enforced budget, not a prediction tied to a particular model price:
 
 * Client circuit breaker opens for 15 minutes after three retryable failures in five minutes. WorkManager may batch summaries but MUST NOT retry intent routing after its interaction expires.
 * Offline mode retains all deterministic launcher/action features and rule summaries. UI labels cloud-derived content and exposes delete/disable controls.
-* Raw local events expire after 24 hours or notification removal, whichever is earlier; summaries after 7 days. Server request content expires from memory/cache within stated TTL and is excluded from logs, traces, crash reports, analytics, and model training.
+* Raw local events become inaccessible at 24 hours or removal, whichever is earlier; summaries lose removed members immediately and expire no later than 7 days. H07 distinguishes immediate read/render denial from physical cleanup when execution is available and specifies offline/server deletion. Payloads are excluded from logs, traces, crash reports, analytics, and training; provider retention/residency must also be verified under H16.
 * Metrics: request count, coarse latency bucket, error code, route (local/cache/cloud), model/policy version, token counts, and cost micros. Dimensions MUST NOT include installation ID, package name at low volume, content, URI, contact, or slots.
 * SLOs: local route p95 <150 ms; cached summary p95 <100 ms; cloud intent p95 <2 s; cloud summary p95 <3 s; crash-free sessions >=99.8%. Cloud failure never prevents home-screen rendering.
 
@@ -622,7 +642,7 @@ This is an enforced budget, not a prediction tied to a particular model price:
 
 ## 5. Cursor / Antigravity implementation backlog
 
-Only these six tasks define the build sequence. An agent MUST complete and commit task `N` acceptance evidence before task `N+1` starts. Generated code must preserve module boundaries and may not introduce accessibility dependencies.
+Only these six tasks define the build sequence. An agent MUST complete task `N` acceptance evidence before task `N+1` starts. A commit alone is not acceptance. The user has now authorized Grok-led work toward all six tasks, staged by evidence. Production deployment and publishing need their own real inputs and verification. Generated code must preserve module boundaries and may not introduce accessibility dependencies.
 
 ### Task 1 — Repository foundation and enforceable domain contracts
 
@@ -630,7 +650,7 @@ Only these six tasks define the build sequence. An agent MUST complete and commi
 
 **Objective & scope**
 
-Create the multi-module Android/Kotlin project, domain types, result/error taxonomy, JSON Schemas, protobuf definitions, and architecture checks. Select version-catalog-pinned dependencies and baseline CI. No UI, notification access, networking, or model execution.
+Extend the existing Android/Kotlin project into the required modules; create domain types, result/error taxonomy, JSON Schemas, protobuf definitions, and architecture checks. Select version-catalog-pinned dependencies and baseline CI. Preserve the existing blank Compose shell as a scaffold exception; no functional launcher UI, notification access, networking, or model execution belongs in this task.
 
 **Inputs**
 
@@ -784,6 +804,8 @@ Threat-model and harden the integrated product, verify Play declarations/data sa
 ## 6. Definition of done and architectural guardrails
 
 The product is releasable only when all six tasks pass in order and the following invariants are continuously checked:
+
+* All applicable H01–H20 controls have requirement-to-evidence records under [RELIABILITY_SECURITY.md](RELIABILITY_SECURITY.md). Targets, documentation, and a green compilation are not substitutes for runtime/security evidence.
 
 * No dependency or manifest merger may introduce an accessibility service, overlay, input injection, hidden API, broad package query, or direct-send permission.
 * No LLM output reaches `IntentExecutor` without schema validation, deterministic resolution, policy validation, visible preview where required, and a current user gesture.

@@ -17,6 +17,10 @@ The user has authorized Grok-led work through all six tasks, advancing only afte
 each task's evidence passes. This repository checkpoint saves the current scaffold
 and design; it does not certify production readiness.
 
+The [chat transcript](CHAT_TRANSCRIPT.md) preserves the earlier discussion for
+context. Current instructions and the linked architecture documents define the
+active implementation requirements.
+
 [Reliability and security requirements](docs/RELIABILITY_SECURITY.md) define mandatory
 failure behavior, privacy, cost admission, upgrade, and recovery controls.
 [Acceptance status](docs/ACCEPTANCE_STATUS.md) distinguishes requirements from

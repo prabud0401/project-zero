@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "requestId": "018f0000-0000-7000-8000-000000000001",
+  "baseRevision": 12,
+  "clusters": [
+    {
+      "clusterId": "018f0000-0000-7000-8000-00000000000a",
+      "memberEventIds": ["018f0000-0000-7000-8000-000000000002"],
+      "headline": "Messages",
+      "summary": "One conversation",
+      "kind": "MESSAGE",
+      "priority": 40,
+      "confidence": 0.75,
+      "expiresAtEpochMs": 1700000000000
+    }
+  ],
+  "usage": {
+    "cacheHit": false,
+    "inputTokens": 120,
+    "outputTokens": 40
+  }
+}

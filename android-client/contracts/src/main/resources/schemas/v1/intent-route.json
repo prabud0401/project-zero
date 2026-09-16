@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://projectzero.example/schemas/v1/intent-route.json",
+  "$defs": {
+    "slots": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "recipientToken": { "type": "string", "maxLength": 128 },
+        "message": { "type": "string", "maxLength": 2000 },
+        "destination": { "type": "string", "maxLength": 300 },
+        "title": { "type": "string", "maxLength": 160 },
+        "startEpochMs": { "type": "integer", "minimum": 0 },
+        "endEpochMs": { "type": "integer", "minimum": 0 },
+        "zoneId": { "type": "string", "maxLength": 64 },
+        "query": { "type": "string", "maxLength": 500 }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "title": "IntentRouteRequest", "type": "object", "additionalProperties": false,
+      "required": ["schemaVersion", "requestId", "locale", "capabilityHints", "redactedText"],
+      "properties": {
+        "schemaVersion": { "const": 1 },
+        "requestId": { "type": "string", "format": "uuid" },
+        "locale": { "type": "string" },
+        "capabilityHints": { "type": "array", "maxItems": 7, "items": { "enum": ["MESSAGE", "NAVIGATE", "CREATE_CALENDAR_EVENT", "DIAL", "EMAIL", "WEB_SEARCH", "OPEN_APP"] } },
+        "redactedText": { "type": "string", "minLength": 1, "maxLength": 2000 }
+      }
+    },
+    {
+      "title": "IntentRouteResponse", "type": "object", "additionalProperties": false,
+      "required": ["schemaVersion", "requestId", "capability", "slots", "missingSlots", "confidence"],
+      "properties": {
+        "schemaVersion": { "const": 1 },
+        "requestId": { "type": "string", "format": "uuid" },
+        "capability": { "enum": ["MESSAGE", "NAVIGATE", "CREATE_CALENDAR_EVENT", "DIAL", "EMAIL", "WEB_SEARCH", "OPEN_APP"] },
+        "slots": { "$ref": "#/$defs/slots" },
+        "missingSlots": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    }
+  ]
+}

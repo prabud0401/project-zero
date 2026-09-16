@@ -1,0 +1,136 @@
+syntax = "proto3";
+
+package projectzero.reasoning.v1;
+
+option java_package = "app.projectzero.contracts.proto";
+option java_multiple_files = true;
+option java_outer_classname = "ReasoningProto";
+
+// Canonical gRPC surface for Task 1. Field numbers MUST never be reused after release (H04/H14).
+service ReasoningService {
+  rpc Summarize(SummaryBatchRequest) returns (SummaryBatchResponse);
+  rpc RouteIntent(IntentRouteRequest) returns (IntentRouteResponse);
+}
+
+service RegistryService {
+  rpc GetRegistry(GetRegistryRequest) returns (GetRegistryResponse);
+}
+
+message SummaryBatchRequest {
+  int32 schema_version = 1;
+  string request_id = 2;
+  int64 base_revision = 3;
+  string locale = 4;
+  repeated RedactedNotification events = 5;
+}
+
+message RedactedNotification {
+  string event_id = 1;
+  string kind = 2;
+  optional string redacted_title = 3;
+  optional string redacted_body = 4;
+  string content_fingerprint = 5;
+}
+
+message SummaryBatchResponse {
+  int32 schema_version = 1;
+  string request_id = 2;
+  int64 base_revision = 3;
+  repeated Cluster clusters = 4;
+  Usage usage = 5;
+}
+
+message Cluster {
+  string cluster_id = 1;
+  repeated string member_event_ids = 2;
+  string headline = 3;
+  string summary = 4;
+  string kind = 5;
+  int32 priority = 6;
+  double confidence = 7;
+  int64 expires_at_epoch_ms = 8;
+}
+
+message IntentRouteRequest {
+  int32 schema_version = 1;
+  string request_id = 2;
+  string locale = 3;
+  repeated string capability_hints = 4;
+  string redacted_text = 5;
+}
+
+message IntentRouteResponse {
+  int32 schema_version = 1;
+  string request_id = 2;
+  string capability = 3;
+  IntentSlots slots = 4;
+  repeated string missing_slots = 5;
+  double confidence = 6;
+}
+
+message Usage {
+  bool cache_hit = 1;
+  int32 input_tokens = 2;
+  int32 output_tokens = 3;
+}
+
+message IntentSlots {
+  optional string recipient_token = 1;
+  optional string message = 2;
+  optional string destination = 3;
+  optional string title = 4;
+  optional int64 start_epoch_ms = 5;
+  optional int64 end_epoch_ms = 6;
+  optional string zone_id = 7;
+  optional string query = 8;
+}
+
+message GetRegistryRequest {
+  int32 schema_version = 1;
+  optional int64 version = 2;
+}
+
+message GetRegistryResponse {
+  int32 schema_version = 1;
+  RegistryManifest manifest = 2;
+}
+
+message RegistryManifest {
+  int64 registry_version = 1;
+  string key_id = 2;
+  int32 schema = 3;
+  int64 expires_at_epoch_ms = 4;
+  int32 min_client_version = 5;
+  bytes canonical_payload = 6;
+  bytes signature = 7;
+  repeated RegistryEntry entries = 8;
+}
+
+message RegistryEntry {
+  string entry_id = 1;
+  string capability = 2;
+  string package_name = 3;
+  repeated string certificate_sha256_pins = 4;
+  int64 min_version_code = 5;
+  repeated string allowed_schemes = 6;
+  repeated string allowed_hosts = 7;
+  repeated string allowed_path_regexes = 8;
+  repeated ParameterMapping parameter_mappings = 9;
+  optional string fallback_id = 10;
+  int64 expires_at_epoch_ms = 11;
+}
+
+message ParameterMapping {
+  string slot = 1;
+  string placeholder = 2;
+  string parameter_type = 3;
+}
+
+message ErrorResponse {
+  int32 schema_version = 1;
+  string request_id = 2;
+  string code = 3;
+  bool retryable = 4;
+  optional int64 retry_after_ms = 5;
+  string message = 6;
+}

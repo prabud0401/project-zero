@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "requestId": "018f0000-0000-7000-8000-000000000003",
+  "locale": "en-US",
+  "capabilityHints": ["MESSAGE", "EMAIL"],
+  "redactedText": "text <PERSON_1> running late"
+}

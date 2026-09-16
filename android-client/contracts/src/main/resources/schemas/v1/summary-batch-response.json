@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://projectzero.example/schemas/v1/summary-batch-response.json",
+  "title": "SummaryBatchResponse",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "requestId", "baseRevision", "clusters", "usage"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "requestId": { "type": "string", "format": "uuid" },
+    "baseRevision": { "type": "integer", "minimum": 1 },
+    "clusters": {
+      "type": "array", "maxItems": 50,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["clusterId", "memberEventIds", "headline", "summary", "kind", "priority", "confidence", "expiresAtEpochMs"],
+        "properties": {
+          "clusterId": { "type": "string", "format": "uuid" },
+          "memberEventIds": { "type": "array", "minItems": 1, "maxItems": 50, "uniqueItems": true, "items": { "type": "string", "format": "uuid" } },
+          "headline": { "type": "string", "minLength": 1, "maxLength": 80 },
+          "summary": { "type": "string", "minLength": 1, "maxLength": 280 },
+          "kind": { "enum": ["MESSAGE", "SOCIAL", "CALENDAR", "DELIVERY", "MEDIA", "SYSTEM", "OTHER"] },
+          "priority": { "type": "integer", "minimum": 0, "maximum": 100 },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "expiresAtEpochMs": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "usage": {
+      "type": "object", "additionalProperties": false,
+      "required": ["cacheHit", "inputTokens", "outputTokens"],
+      "properties": {
+        "cacheHit": { "type": "boolean" },
+        "inputTokens": { "type": "integer", "minimum": 0 },
+        "outputTokens": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

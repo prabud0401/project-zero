@@ -16,3 +16,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "android-client"
 include(":app")
+include(":domain")
+include(":contracts")
+include(":architecture-tests")

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "requestId": "018f0000-0000-7000-8000-000000000001",
+  "baseRevision": 12,
+  "locale": "en-US",
+  "events": [
+    {
+      "eventId": "018f0000-0000-7000-8000-000000000002",
+      "kind": "MESSAGE",
+      "redactedTitle": null,
+      "redactedBody": "",
+      "contentFingerprint": "abcdefghijklmnopqrstuvwxyz0123456789-_ABCDE"
+    }
+  ]
+}

@@ -8,14 +8,14 @@ This sequence supersedes the previous backlog, including its broad package permi
 
 ## Task 1: Android foundation and domain contracts
 
-**Status: partial.** The blank Compose shell builds; the complete SDD foundation is unfinished.
+**Status: static evidence recorded; not complete.** Domain/contracts/architecture-tests/CI/locks are in tree and the debug APK builds. Device/emulator HOME eligibility is still unverified. Do not start Task 2 until that remaining acceptance item is decided.
 
 - Scope: preserve the existing Android scaffold and add pure Kotlin domain contracts, validation/result types, JSON schemas/protobuf, architecture checks, dependency locks, and baseline CI.
 - Inputs: SDD sections 0 and 2 and the existing Gradle catalog/manifest.
 - Outputs: `:app`, `:domain`, `:contracts`, and `:architecture-tests` under `android-client`; fixtures and checks; repository CI configuration. Keep one Android Gradle root at `android-client`.
 - Acceptance: all five SDD Task 1 criteria, successful debug APK build, and device/emulator verification of the blank activity and HOME eligibility. Report `NO-SOURCE` as absent tests, not passing coverage.
 - Manifest: HOME/DEFAULT; no accessibility service, overlay, broad package visibility, or notification listener. No notification-access flow in Task 1.
-- Current checkpoint: finish Task 1 evidence, then proceed through Tasks 2–6 in order under the user's latest authorization. Do not call a task complete or start dependent work before its acceptance evidence passes. External credentials, production deployment, store publication, and release identity still require real owner inputs.
+- Current checkpoint: static Task 1 command evidence is in [ACCEPTANCE_STATUS.md](ACCEPTANCE_STATUS.md). `adb devices` was empty on this host, so HOME runtime eligibility is still open. Do not call Task 1 complete or start Task 2 before that remaining item is accepted. External credentials, production deployment, store publication, and release identity still require real owner inputs.
 
 Task 1 contracts must encode H02 event/snapshot/epoch separation, H03 action outcomes, H04 serialization/presence, H05 routing precedence, H06 cache scope, H10 operation/reservation states, H12 bounds, and H14/H19 versioning/build rules. Defining these contracts does not authorize implementing later runtime features.
 

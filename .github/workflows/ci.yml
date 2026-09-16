@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  android:
+    name: assembleDebug check lint test
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4.7.1
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3.2.2
+        with:
+          packages: |
+            platform-tools
+            platforms;android-36
+            build-tools;36.0.0
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x android-client/gradlew android-client/gradlew.bat
+
+      - name: Assemble, check, lint, and test
+        working-directory: android-client
+        env:
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+        run: ./gradlew assembleDebug check lint test --console=plain --no-daemon

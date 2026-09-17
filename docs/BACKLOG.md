@@ -30,6 +30,8 @@ Task 1 contracts must encode H02 event/snapshot/epoch separation, H03 action out
 
 ## Task 3: Deterministic intent resolution and execution
 
+**Status: unit/static evidence recorded; not complete.** `:intent-router`, `:action-resolver`, `:registry`, and `:android-executor` are in tree. Static unit/Robolectric tests are verified. Device execution/resolution testing is BLOCKED (`adb` empty).
+
 **Depends on:** accepted Tasks 1–2.
 
 - Inputs/scope: SDD Task 3, capability matrix, typed action contracts, and signed registry fixtures.

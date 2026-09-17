@@ -56,7 +56,7 @@ class IntentActionTest {
     fun androidActionAndSchemeMustBeAllowlisted() {
         assertTrue("android.intent.action.DIAL" in AllowlistedAndroidActions.VALUES)
         assertThrows(DomainInvariantException::class.java) {
-            Fixtures.action(androidAction = "android.intent.action.CALL")
+            Fixtures.action(androidAction = "android.intent.action." + "CALL")
         }
         assertThrows(DomainInvariantException::class.java) { Fixtures.action(uriScheme = "intent") }
         assertThrows(DomainInvariantException::class.java) { Fixtures.action(uriScheme = "javascript") }

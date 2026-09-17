@@ -125,7 +125,35 @@ class ArchitectureGuardTest {
                 text.contains("<uses-permission") && text.contains("BIND_NOTIFICATION_LISTENER_SERVICE"),
                 "uses-permission BIND_NOTIFICATION_LISTENER_SERVICE in ${file.relativeTo(root)}",
             )
+            assertFalse(text.contains("ACTION_CALL"), "ACTION_CALL in ${file.relativeTo(root)}")
+            assertFalse(text.contains("CALL_PHONE"), "CALL_PHONE in ${file.relativeTo(root)}")
         }
+    }
+
+    @Test
+    fun sourcesMustNotUseActionCallOrHiddenApis() {
+        val root = File(System.getProperty("androidClientRoot"))
+        val hits = mutableListOf<String>()
+        root.walkTopDown()
+            .filter { it.extension == "kt" && !it.path.contains("${File.separator}build${File.separator}") }
+            .forEach { file ->
+                file.readLines().forEachIndexed { index, line ->
+                    val trimmed = line.trim()
+                    if (trimmed.startsWith("//")) return@forEachIndexed
+                    if (trimmed.contains("Intent.ACTION_CALL") || trimmed.contains("\"android.intent.action.CALL\"")) {
+                        if (!trimmed.contains("forbidden") && !trimmed.contains("assert") &&
+                            !trimmed.contains("require(") && !trimmed.contains("!=") &&
+                            !trimmed.contains("==") && !trimmed.contains("trimmed.contains")
+                        ) {
+                            hits += "${file.relativeTo(root)}:${index + 1}: $trimmed"
+                        }
+                    }
+                    if ((trimmed.contains("@hide") || trimmed.contains("dalvik.system.VMRuntime")) && !trimmed.contains("trimmed.contains")) {
+                        hits += "${file.relativeTo(root)}:${index + 1}: $trimmed"
+                    }
+                }
+            }
+        assertTrue(hits.isEmpty(), hits.joinToString("\n"))
     }
 
     @Test

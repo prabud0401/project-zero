@@ -1,0 +1,21 @@
+Project Zero - implement SDD Task 2 ONLY in C:\Users\prabu\Desktop\Projects\project-zero. User authorizes all six tasks; finish Task 2 in this invocation only.
+
+READ FIRST: CONTINUE_WITH_GROK.md, docs/SYSTEM_DESIGN.md Task 2, docs/RELIABILITY_SECURITY.md (H02,H07,H08,H12,H13,H14), docs/BACKLOG.md, docs/ACCEPTANCE_STATUS.md, docs/IMPLEMENTATION_HANDOFF.md. Base commit: 2c4ba0f. Preserve :domain, :contracts, :architecture-tests, :app Compose shell.
+
+TASK 1 NOTE: static foundation at 59875cf is done. adb devices empty - record device checks as BLOCKED/unverified; do not block Task 2 implementation.
+
+TASK 2 DELIVERABLES under android-client:
+- Modules :notification-ingest, :local-ai, :data-local with Room encrypted storage, migrations, TTL/tombstones
+- NotificationListenerService adapter (manifest android:permission BIND_NOTIFICATION_LISTENER_SERVICE on service, NOT uses-permission)
+- Normalizer, PII/sensitivity classifier, deterministic clustering/fallback SummaryEngine
+- Explicit notification-access onboarding/education UI route in :app (minimal, not full Task 5 launcher)
+- NO cloud/network calls; never log notification bodies
+- Robolectric/unit/instrumentation tests per SDD Task 2 criteria: post/update/remove, repost, process death simulation, disconnect, multi-user serial, ongoing, out-of-order; property tests for idempotent normalization, no duplicate cluster members, tombstone revival blocked, raw retention <=24h; security tests for RemoteViews/PendingIntent/spans/oversized/OTP/health/finance/managed-profile never cloud-eligible; denied/revoked listener shows non-blocking explanation; lock-screen redaction tests where feasible without device
+
+STRICT PROHIBITIONS: No AccessibilityService, QUERY_ALL_PACKAGES, SYSTEM_ALERT_WINDOW, overlay, hidden APIs, cloud client, fake test results.
+
+VERIFY: ANDROID_HOME=C:\Users\prabu\AppData\Local\Android\Sdk. Run .\gradlew.bat assembleDebug check lint test --console=plain. Scan manifests. Fix failures.
+
+UPDATE docs/ACCEPTANCE_STATUS.md and docs/BACKLOG.md honestly.
+
+COMMIT AND PUSH to origin main with message "Complete SDD Task 2 notification ingestion and privacy". Report files, test counts, exit codes, gaps.

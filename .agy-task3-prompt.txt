@@ -1,0 +1,21 @@
+Complete SDD Task 3 ONLY for Project Zero at C:\Users\prabu\Desktop\Projects\project-zero.
+
+READ: CONTINUE_WITH_GROK.md, docs/SYSTEM_DESIGN.md Task 3, docs/RELIABILITY_SECURITY.md (H03,H08,H15), docs/BACKLOG.md, docs/ACCEPTANCE_STATUS.md.
+
+CHECKPOINT: Task 1 at 59875cf, Task 2 at 1c9a0ec on main. Partial Task 3 WIP is already on disk (uncommitted): intent-router, action-resolver, registry, android-executor modules and settings.gradle.kts edits. Preserve and finish this work; do not delete and regenerate.
+
+IMMEDIATE FIXES:
+1. Wire modules in settings.gradle.kts and app if needed
+2. Generate STRICT gradle.lockfile for all new Task 3 modules (build currently fails: android-executor missing lock state)
+3. Implement/finish: local grammar router, signed registry verification, deterministic resolver, URI builders, policy gate, preview digest, user-gesture-bound AndroidIntentExecutor per SDD section 3 matrix
+4. Narrow manifest queries entries only (no QUERY_ALL_PACKAGES)
+5. Tests: matrix table-driven, URI fuzz, registry signature rejection, instrumentation with fake activities where feasible
+6. NO cloud parsing, NO AccessibilityService, NO hidden APIs
+
+VERIFY: ANDROID_HOME=C:\Users\prabu\AppData\Local\Android\Sdk. From android-client run: .\gradlew.bat assembleDebug check lint test --console=plain. Fix all failures.
+
+UPDATE docs/ACCEPTANCE_STATUS.md and docs/BACKLOG.md honestly.
+
+COMMIT AND PUSH to origin main: "Complete SDD Task 3 intent router and safe executor"
+
+Report test counts, exit codes, manifest scan, gaps. Do NOT start Task 4 in this invocation.

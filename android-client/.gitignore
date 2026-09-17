@@ -24,3 +24,5 @@ google-services.json
 kotlin-js-store/
 secrets.properties
 keystore.properties
+
+.jqwik-database

@@ -1,0 +1,23 @@
+RESUME Project Zero in C:\Users\prabu\Desktop\Projects\project-zero. Previous Grok run timed out mid-Task-2 with uncommitted work. User authorizes completing ALL six SDD tasks using Grok only. In THIS invocation finish Task 2 completely, then continue Tasks 3, 4, 5, and 6 sequentially in the same session if time allows; commit and push after EACH completed task.
+
+READ: CONTINUE_WITH_GROK.md, docs/SYSTEM_DESIGN.md section 5, docs/RELIABILITY_SECURITY.md, docs/BACKLOG.md, docs/ACCEPTANCE_STATUS.md.
+
+CURRENT STATE (partial Task 2 already on disk, uncommitted):
+- New modules: notification-ingest, local-ai, data-local with listener service, Room/SQLCipher, classifier, summary engine, app onboarding UI
+- Build FAILS: Gradle LockMode.STRICT missing lock entries for Room/SQLCipher/compose-test-manifest in app lockfile and new module lockfiles
+- Base commits on main: 59875cf Task1, 2c4ba0f evidence
+
+TASK 2 IMMEDIATE FIXES:
+1. Run gradlew dependencies --write-locks for all modules; ensure STRICT lockfiles exist for notification-ingest, local-ai, data-local
+2. Fix compile/test failures; run assembleDebug check lint test until green
+3. Manifest scan: listener service uses android:permission BIND_NOTIFICATION_LISTENER_SERVICE; NO QUERY_ALL_PACKAGES, AccessibilityService, overlay
+4. Update ACCEPTANCE_STATUS.md and BACKLOG.md honestly (device checks BLOCKED if adb empty)
+5. Commit and push: "Complete SDD Task 2 notification ingestion and privacy"
+
+THEN WITHOUT STOPPING (user authorized all):
+- Task 3: intent-router, action-resolver, registry, android-executor, narrow queries, tests, commit push
+- Task 4: network, cloud-policy, services/reasoning stub with conformance tests; mark GCP production BLOCKED without credentials; local fallbacks must work
+- Task 5: feature-home, feature-intent, feature-settings Compose integration, tests, commit push
+- Task 6: threat-model, privacy-data-map, play-compliance, SBOM scripts, verification report; honest NOT READY where evidence missing
+
+RULES: No fake tests. No notification body logging. No AccessibilityService. Preserve existing modules. ANDROID_HOME=C:\Users\prabu\AppData\Local\Android\Sdk. Report per-task test counts, exit codes, commits pushed, and remaining gaps.

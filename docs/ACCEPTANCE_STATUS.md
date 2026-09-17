@@ -37,6 +37,19 @@ Owner: Grok-led implementation 2026-09-17. Environment: Windows host, compile/ta
 
 Manifest scan (source + merged debug): listener service `android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"`; no `QUERY_ALL_PACKAGES`, `AccessibilityService`, `BIND_ACCESSIBILITY_SERVICE`, `SYSTEM_ALERT_WINDOW`. Debug merged manifest still includes Compose `PreviewActivity` and `ui-test-manifest` `ComponentActivity`.
 
+## SDD Task 3 criteria
+
+Owner: Grok-led implementation 2026-09-17. Environment: Windows host, compile/target SDK 36, minSdk 29, Robolectric `@Config(sdk = 29)`, no attached device.
+
+| Criterion | Status | Evidence | Limitations |
+|---|---|---|---|
+| Local grammar router parsing, slot extraction, ambiguity detection | VERIFIED (unit) | `:intent-router` `LocalGrammarRouterTest` tests routing, text normalization | Not a device test. Does not cover cloud routing fallback (explicitly excluded in Task 3). |
+| Signed registry verification, tamper rejection, preview digest matching | VERIFIED (unit) | `:registry` `RegistryVerifierTest`; `:action-resolver` `ResolverMatrixTest`; `:android-executor` `AndroidIntentExecutorTest` | Registry public key logic assumes correctly signed fixtures. |
+| Deterministic action resolution, URI safety fuzzing, policy gate enforcement | VERIFIED (unit) | `:action-resolver` `UriSafetyFuzzTest`, `ResolverMatrixTest` | No real intents sent to the system in unit tests. |
+| User-gesture-bound executor, at-most-once semantics, target app intent constraints | VERIFIED (Robolectric) | `:android-executor` `AndroidIntentExecutorTest` checks chooser fallback, digest mismatch, expired intents, consumed confirmation | ShadowActivity intercepts intents; does not prove actual Android OS behavior. |
+
+Manifest scan (source + merged debug): narrow `<queries>` entries in `:android-executor` and NO `QUERY_ALL_PACKAGES`.
+
 ## Hardening controls
 
 All statuses below concern implementation and verification, not whether the requirement is documented. Their definitions and evidence expectations are in RELIABILITY_SECURITY.md.

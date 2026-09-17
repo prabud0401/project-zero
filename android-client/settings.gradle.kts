@@ -29,3 +29,7 @@ include(":android-executor")
 
 include(":network")
 include(":cloud-policy")
+
+include(":feature-home")
+include(":feature-intent")
+include(":feature-settings")

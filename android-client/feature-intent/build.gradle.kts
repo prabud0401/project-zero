@@ -1,21 +1,15 @@
 plugins {
-    alias(libs.plugins.android.application)
+    alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 }
 
 android {
-    namespace = "app.projectzero.launcher"
+    namespace = "app.projectzero.feature.intent"
     compileSdk = 36
 
     defaultConfig {
-        // Provisional applicationId: none was supplied out-of-band for Task 1.
-        // Replace before any release or signing configuration is added.
-        applicationId = "app.projectzero.launcher"
         minSdk = 29
-        targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -51,17 +45,7 @@ kotlin {
 }
 
 dependencies {
-    implementation(project(":feature-home"))
-    implementation(project(":feature-intent"))
-    implementation(project(":feature-settings"))
     implementation(project(":domain"))
-    implementation(project(":local-ai"))
-    implementation(project(":data-local"))
-    implementation(project(":notification-ingest"))
-    implementation(project(":registry"))
-    implementation(project(":intent-router"))
-    implementation(project(":action-resolver"))
-    implementation(project(":android-executor"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -79,10 +63,4 @@ dependencies {
     testImplementation(platform(libs.androidx.compose.bom))
     testImplementation(libs.androidx.compose.ui.test.junit4)
     testImplementation(libs.androidx.compose.ui.test.manifest)
-    androidTestImplementation(libs.androidx.test.ext.junit)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
 }
-
-    
-

@@ -63,3 +63,4 @@ Task 1 contracts must encode H02 event/snapshot/epoch separation, H03 action out
 - Inputs/scope: SDD Task 6 and the integrated application/backend.
 - Outputs: threat model, data/privacy map, Play evidence, SBOM, release/rollback runbooks, and verification report.
 - Acceptance: every SDD Task 6 criterion, backed by actual security, device, load, soak, deletion, and rollback evidence. Record unavailable checks accurately. Publishing and production changes follow user authorization.
+

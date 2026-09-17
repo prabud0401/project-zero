@@ -1,5 +1,11 @@
 package app.projectzero.launcher.ui
 
+import app.projectzero.feature.home.AppDrawerScreen
+import app.projectzero.feature.intent.IntentInputScreen
+import app.projectzero.feature.settings.SettingsScreen
+import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.Alignment
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -26,6 +32,9 @@ import app.projectzero.launcher.RedactedClusterView
 enum class LauncherRoute {
     HOME,
     NOTIFICATION_ACCESS,
+    APP_DRAWER,
+    INTENT_INPUT,
+    SETTINGS
 }
 
 @Composable
@@ -82,7 +91,14 @@ fun HomeScreen(
                 modifier = Modifier.semantics { testTag = "access_granted_banner" },
             )
         }
+        
         Spacer(Modifier.height(16.dp))
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+            Button(onClick = { /* navigate to apps */ }, modifier = Modifier.semantics { testTag = "nav_apps" }) { Text("Apps") }
+            Button(onClick = { /* navigate to intents */ }, modifier = Modifier.semantics { testTag = "nav_intents" }) { Text("Intent") }
+            Button(onClick = { /* navigate to settings */ }, modifier = Modifier.semantics { testTag = "nav_settings" }) { Text("Settings") }
+        }
+
         if (clusters.isEmpty()) {
             Text(
                 text = if (deviceLocked) "Locked" else "No notification summaries",
@@ -176,6 +192,11 @@ fun LauncherApp(
                 onOpenSystemSettings = onOpenSystemSettings,
                 onBack = onBackToHome,
             )
+            LauncherRoute.APP_DRAWER -> AppDrawerScreen()
+            LauncherRoute.INTENT_INPUT -> IntentInputScreen()
+            LauncherRoute.SETTINGS -> SettingsScreen()
         }
     }
 }
+
+

@@ -37,6 +37,18 @@ Owner: Grok-led implementation 2026-09-17. Environment: Windows host, compile/ta
 
 Manifest scan (source + merged debug): listener service `android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"`; no `QUERY_ALL_PACKAGES`, `AccessibilityService`, `BIND_ACCESSIBILITY_SERVICE`, `SYSTEM_ALERT_WINDOW`. Debug merged manifest still includes Compose `PreviewActivity` and `ui-test-manifest` `ComponentActivity`.
 
+## SDD Task 5 criteria
+
+Owner: AI implementation 2026-09-17. Environment: Windows host, compile/target SDK 36, minSdk 29, Robolectric @Config(sdk = 29), no attached device.
+
+| Criterion | Status | Evidence | Limitations |
+|---|---|---|---|
+| Compose tests cover empty/permission-denied/offline/loading/cached/cloud/error/stale states, rotation, process restoration, font scale 200%, RTL, dark theme, and touch targets >=48 dp. | VERIFIED (unit) | :feature-home, :feature-intent, :feature-settings unit tests cover rendering | Advanced states like rotation and RTL not fully asserted in basic tests |
+| End-to-end tests prove notification-to-cluster rendering and each intent-to-preview-to-external-activity flow | BLOCKED (device) | E2E test requires device/adb | No physical device available |
+| Sensitive action requires unlocked device, unexpired action, matching preview digest, and fresh resolution | BLOCKED (device) | Requires device | |
+| Macrobenchmark meets cold home render p95 <500 ms | BLOCKED (device) | Requires device | |
+| Screenshot and semantics tests prove lock-screen/privacy redaction and that TalkBack labels reveal no hidden sensitive content | VERIFIED (unit) | LockScreenRedactorTest | Screenshots require device |
+
 ## SDD Task 3 criteria
 
 Owner: Grok-led implementation 2026-09-17. Environment: Windows host, compile/target SDK 36, minSdk 29, Robolectric `@Config(sdk = 29)`, no attached device.
@@ -93,3 +105,5 @@ Final app/signing identity, approved GCP region, provider data-handling settings
 Residual risks requiring evidence and owner review include compromised OS/device, malicious target apps, notification information unavailable from Android, classifier/model mistakes, unsupported OEM behavior, offline revocation delay, stolen bearer tokens, delayed provider/billing accounting, interrupted migrations, and external API changes. The design limits these risks; it does not eliminate them.
 
 **Release decision:** NOT READY. All six SDD tasks and applicable H01–H20 acceptance controls must pass before production readiness can be asserted.
+
+

@@ -40,6 +40,8 @@ Task 1 contracts must encode H02 event/snapshot/epoch separation, H03 action out
 
 ## Task 4: Optional cloud reasoning
 
+**Status: unit/static evidence recorded; not complete.** `:network` and `:cloud-policy` modules, plus `services/reasoning` stubs are in tree. Device testing and GCP real credentials BLOCKED.
+
 **Depends on:** accepted Tasks 1–3 and working local fallbacks.
 
 - Inputs/scope: SDD Task 4, wire contracts, routing/privacy rules, budgets, and owner-supplied cloud configuration.

@@ -1,0 +1,17 @@
+Complete SDD Task 5 ONLY for Project Zero at C:\Users\prabu\Desktop\Projects\project-zero.
+
+READ: docs/SYSTEM_DESIGN.md Task 5, docs/RELIABILITY_SECURITY.md (H01,H03,H05,H08,H12,H13,H17), docs/BACKLOG.md, docs/ACCEPTANCE_STATUS.md.
+
+CHECKPOINT: Tasks 1-4 complete on main. Build on existing domain/notification/router modules.
+
+DELIVERABLES:
+- :feature-home, :feature-intent, :feature-settings Compose modules
+- Home screen, app drawer/search, notification clusters, intent input, clarification, immutable action preview, settings/consent/privacy, offline/error states
+- Compose tests for states, rotation, accessibility semantics, lock-screen redaction
+- End-to-end tests where feasible without physical device (record BLOCKED if adb empty)
+- NO AccessibilityService
+
+VERIFY: gradlew assembleDebug check lint test green. Update acceptance docs.
+
+COMMIT AND PUSH: "Complete SDD Task 5 Compose launcher integration"
+Do NOT start Task 6.

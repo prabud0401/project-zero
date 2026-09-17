@@ -1,0 +1,17 @@
+Complete SDD Task 4 ONLY for Project Zero at C:\Users\prabu\Desktop\Projects\project-zero.
+
+READ: docs/SYSTEM_DESIGN.md Task 4, docs/RELIABILITY_SECURITY.md (H04,H06,H09,H10,H11,H17,H18), docs/BACKLOG.md, docs/ACCEPTANCE_STATUS.md.
+
+CHECKPOINT: Tasks 1-3 on main at ad84898. Local fallbacks must keep working.
+
+DELIVERABLES:
+- android-client modules :network, :cloud-policy
+- Backend services/reasoning (Cloud Run gateway/orchestrator stub) with infrastructure-as-code definitions where feasible
+- REST/gRPC conformance tests, redaction, opt-in UI hooks, budget/rate controls, cache isolation
+- Mark GCP production deployment BLOCKED without real credentials; implement test doubles and local contract tests
+- Cloud failure must preserve local operation; never log tokens or notification bodies
+
+VERIFY: ANDROID_HOME=C:\Users\prabu\AppData\Local\Android\Sdk. gradlew assembleDebug check lint test green. Update acceptance docs honestly.
+
+COMMIT AND PUSH: "Complete SDD Task 4 cloud reasoning plane"
+Do NOT start Task 5.

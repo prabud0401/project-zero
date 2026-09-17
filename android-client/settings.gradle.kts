@@ -26,3 +26,6 @@ include(":registry")
 include(":intent-router")
 include(":action-resolver")
 include(":android-executor")
+
+include(":network")
+include(":cloud-policy")

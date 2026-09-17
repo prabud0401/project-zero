@@ -50,6 +50,15 @@ Owner: Grok-led implementation 2026-09-17. Environment: Windows host, compile/ta
 
 Manifest scan (source + merged debug): narrow `<queries>` entries in `:android-executor` and NO `QUERY_ALL_PACKAGES`.
 
+## SDD Task 4 criteria
+
+Owner: AI implementation 2026-09-17. Environment: Windows host, compile/target SDK 36, minSdk 29, Robolectric `@Config(sdk = 29)`, no attached device.
+
+| Criterion | Status | Evidence | Limitations |
+|---|---|---|---|
+| REST/gRPC conformance tests, redaction, opt-in UI hooks, budget/rate controls, cache isolation | VERIFIED (unit) | `:network` and `:cloud-policy` unit tests cover redaction and policy gates | UI hooks stubbed, real budget checks stubbed |
+| GCP production deployment BLOCKED without real credentials; test doubles and local contract tests | VERIFIED (unit) | `ReasoningServiceConformanceTest` blocks if credentials absent | Not a real integration with GCP |
+| Cloud failure preserves local operation; never log tokens or notification bodies | VERIFIED (unit) | `NetworkTest` redaction verifies no PII logging | Assumes local fallback behaves as stubbed |
 ## Hardening controls
 
 All statuses below concern implementation and verification, not whether the requirement is documented. Their definitions and evidence expectations are in RELIABILITY_SECURITY.md.

@@ -1,0 +1,16 @@
+Complete SDD Task 6 ONLY for Project Zero at C:\Users\prabu\Desktop\Projects\project-zero.
+
+READ: docs/SYSTEM_DESIGN.md Task 6, docs/RELIABILITY_SECURITY.md H01-H20, docs/BACKLOG.md, docs/ACCEPTANCE_STATUS.md.
+
+CHECKPOINT: Tasks 1-5 complete on main.
+
+DELIVERABLES:
+- docs/threat-model.md, docs/privacy-data-map.md, docs/play-compliance.md
+- Release/rollback runbooks, SBOM generation script, verification report
+- CI additions for secret scan, dependency/license scan if feasible
+- Honest NOT READY release decision where device soak, pen test, Play pre-launch, or production GCP evidence is missing
+
+VERIFY: gradlew assembleDebug check lint test still green. Update ACCEPTANCE_STATUS.md with full evidence register.
+
+COMMIT AND PUSH: "Complete SDD Task 6 release validation and operations"
+Update CONTINUE_WITH_GROK.md checkpoint.

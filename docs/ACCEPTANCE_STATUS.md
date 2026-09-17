@@ -1,6 +1,6 @@
 # Acceptance evidence register
 
-**Snapshot:** 2026-09-17. SDD Task 1 static foundation remains `59875cf` / `2c4ba0f`. Task 2 local ingestion/privacy is implemented with unit/static evidence in this working tree (commit after this register update). Device/emulator runtime remains BLOCKED. Tasks 3–6 are not started.
+**Snapshot:** 2026-09-17. SDD Task 1 static foundation remains `59875cf` / `2c4ba0f`. Task 2 local ingestion/privacy is implemented with unit/static evidence in this working tree. Device/emulator runtime remains BLOCKED. Tasks 3-5 implemented with static/unit evidence. Task 6 deliverables (SBOM, Runbooks, Threat Model, CI) are committed.
 
 Status vocabulary: NOT_STARTED, IMPLEMENTED_UNVERIFIED, VERIFIED, BLOCKED. A record must include task owner, requirement, evidence location, build/commit identifier, environment, date, limitations, and any blocking input. Do not infer VERIFIED from documentation, a successful compilation, or another model's unsupported claim.
 
@@ -11,7 +11,8 @@ Status vocabulary: NOT_STARTED, IMPLEMENTED_UNVERIFIED, VERIFIED, BLOCKED. A rec
 - Unit-test coverage: VERIFIED for JVM and Robolectric unit tests in this working tree. Unique test methods (debug XML, 0 failures / 0 errors / 0 skipped): `:domain` 39, `:contracts` 24, `:architecture-tests` 8, `:local-ai` 17, `:data-local` 6, `:notification-ingest` 20, `:app` 5 (3 Compose UI tests debug-only + 2 lock-redactor tests). Debug total 119. Release unit tests re-run `:data-local` 6, `:notification-ingest` 20, `:app` 2. jqwik properties are counted as methods; they execute multiple tries internally. `:app` `androidTest` exists but was not executed (no device).
 - Complete SDD Task 1: IMPLEMENTED_UNVERIFIED. Static criteria remain as recorded at `59875cf`. Device/emulator HOME eligibility is still BLOCKED.
 - SDD Task 2: IMPLEMENTED_UNVERIFIED. Unit/static criteria have evidence below. Device/locked-emulator/instrumentation items are BLOCKED (`adb` empty).
-- SDD Tasks 3–6: NOT_STARTED.
+- SDD Tasks 3-5: IMPLEMENTED_UNVERIFIED.
+- SDD Task 6: VERIFIED for static deliverables. Device soak, pen test, Play pre-launch, production GCP, and signing identity evidence remain BLOCKED.
 
 ## SDD Task 1 criteria
 
@@ -104,6 +105,6 @@ Final app/signing identity, approved GCP region, provider data-handling settings
 
 Residual risks requiring evidence and owner review include compromised OS/device, malicious target apps, notification information unavailable from Android, classifier/model mistakes, unsupported OEM behavior, offline revocation delay, stolen bearer tokens, delayed provider/billing accounting, interrupted migrations, and external API changes. The design limits these risks; it does not eliminate them.
 
-**Release decision:** NOT READY. All six SDD tasks and applicable H01–H20 acceptance controls must pass before production readiness can be asserted.
+**Release decision:** NOT READY. Device soak, pen test, Play pre-launch, production GCP, and signing identity evidence are missing. All six SDD tasks and applicable H01-H20 acceptance controls must be fully verified before production readiness can be asserted.
 
 

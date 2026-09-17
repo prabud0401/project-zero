@@ -32,8 +32,23 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x android-client/gradlew android-client/gradlew.bat
 
+      - name: Secret Scan
+        uses: trufflesecurity/trufflehog@v3.82.2
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --debug --only-verified
+
       - name: Assemble, check, lint, and test
         working-directory: android-client
         env:
           ANDROID_HOME: ${{ env.ANDROID_HOME }}
         run: ./gradlew assembleDebug check lint test --console=plain --no-daemon
+
+      - name: Dependency Scan
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: 'project-zero'
+          path: '.'
+          format: 'HTML'

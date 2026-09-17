@@ -2,15 +2,18 @@ Complete SDD Task 6 ONLY for Project Zero at C:\Users\prabu\Desktop\Projects\pro
 
 READ: docs/SYSTEM_DESIGN.md Task 6, docs/RELIABILITY_SECURITY.md H01-H20, docs/BACKLOG.md, docs/ACCEPTANCE_STATUS.md.
 
-CHECKPOINT: Tasks 1-5 complete on main.
+CHECKPOINT: Tasks 1-5 complete on main at 5bb1615. Working tree should be clean.
 
 DELIVERABLES:
 - docs/threat-model.md, docs/privacy-data-map.md, docs/play-compliance.md
-- Release/rollback runbooks, SBOM generation script, verification report
-- CI additions for secret scan, dependency/license scan if feasible
-- Honest NOT READY release decision where device soak, pen test, Play pre-launch, or production GCP evidence is missing
+- Release/rollback runbooks (docs/release-runbook.md, docs/rollback-runbook.md or similar)
+- SBOM generation script and verification report (docs/verification-report.md)
+- CI additions for secret scan, dependency/license scan if feasible without breaking existing workflow
+- Update ACCEPTANCE_STATUS.md with honest evidence: mark NOT READY for release where device soak, pen test, Play pre-launch, production GCP, or signing identity evidence is missing
+- Update CONTINUE_WITH_GROK.md checkpoint to final state
 
-VERIFY: gradlew assembleDebug check lint test still green. Update ACCEPTANCE_STATUS.md with full evidence register.
+VERIFY: ANDROID_HOME=C:\Users\prabu\AppData\Local\Android\Sdk. From android-client run gradlew assembleDebug check lint test --console=plain. Fix any failures.
 
-COMMIT AND PUSH: "Complete SDD Task 6 release validation and operations"
-Update CONTINUE_WITH_GROK.md checkpoint.
+COMMIT AND PUSH to origin main: "Complete SDD Task 6 release validation and operations"
+
+Report what was created, test/build exit codes, and honest release decision.

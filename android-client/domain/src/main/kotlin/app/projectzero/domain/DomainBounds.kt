@@ -34,4 +34,8 @@ object DomainBounds {
     const val NONCE_RETENTION_MS = 10L * 60L * 1000L
     const val INSTALLATION_TOKEN_MAX_LIFETIME_MS = 15L * 60L * 1000L
     const val MIN_RELATED_EVENTS_FOR_CLOUD_SUMMARY = 4
+    const val RAW_RETENTION_MS = 24L * 60L * 60L * 1000L
+    const val SUMMARY_RETENTION_MS = 7L * 24L * 60L * 60L * 1000L
+    const val PERSONAL_PROFILE_SCOPE = "personal"
+    const val PERSONAL_USER_SERIAL = 0L
 }

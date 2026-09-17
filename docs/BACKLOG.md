@@ -8,7 +8,7 @@ This sequence supersedes the previous backlog, including its broad package permi
 
 ## Task 1: Android foundation and domain contracts
 
-**Status: static evidence recorded; not complete.** Domain/contracts/architecture-tests/CI/locks are in tree and the debug APK builds. Device/emulator HOME eligibility is still unverified. Do not start Task 2 until that remaining acceptance item is decided.
+**Status: static evidence recorded; not complete.** Domain/contracts/architecture-tests/CI/locks are in tree and the debug APK builds. Device/emulator HOME eligibility is still unverified. Task 2 was started under explicit owner authorization despite that open item.
 
 - Scope: preserve the existing Android scaffold and add pure Kotlin domain contracts, validation/result types, JSON schemas/protobuf, architecture checks, dependency locks, and baseline CI.
 - Inputs: SDD sections 0 and 2 and the existing Gradle catalog/manifest.
@@ -21,11 +21,12 @@ Task 1 contracts must encode H02 event/snapshot/epoch separation, H03 action out
 
 ## Task 2: Local notification ingestion and privacy
 
-**Depends on:** accepted Task 1.
+**Status: unit/static evidence recorded; not complete.** `:notification-ingest`, `:local-ai`, `:data-local`, listener service, and onboarding UI are in tree. `assembleDebug check lint test` exit 0 (119 unique debug unit tests, 0 failures). Device/emulator grant, lock-screen, and HOME runtime checks are BLOCKED (`adb` empty). Do not treat Task 2 as fully accepted.
 
 - Inputs/scope: SDD Task 2 and notification contracts; ingestion, sensitivity filtering, clustering, encrypted storage, TTL, and tombstones.
 - Outputs: `:notification-ingest`, `:local-ai`, `:data-local`, service declaration, and explicit notification-access onboarding.
 - Acceptance: every SDD Task 2 criterion, including denied/revoked access, update/removal ordering, process restoration, retention, and locked-device privacy. No cloud requests or notification-body logging.
+- Current checkpoint: see [ACCEPTANCE_STATUS.md](ACCEPTANCE_STATUS.md) Task 2 table. Listener is protected by `android:permission BIND_NOTIFICATION_LISTENER_SERVICE` (not a uses-permission). SQLCipher pinned at 4.17.0 for compileSdk 36.
 
 ## Task 3: Deterministic intent resolution and execution
 

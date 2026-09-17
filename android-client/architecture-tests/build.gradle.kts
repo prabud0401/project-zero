@@ -5,6 +5,7 @@ plugins {
 dependencies {
     testImplementation(project(":domain"))
     testImplementation(project(":contracts"))
+    testImplementation(project(":local-ai"))
     testImplementation(libs.archunit.junit5)
     testImplementation(libs.junit.jupiter)
     testRuntimeOnly(libs.junit.platform.launcher)
@@ -16,4 +17,5 @@ tasks.test {
     systemProperty("domainMainSource", rootProject.file("domain/src/main").absolutePath)
     systemProperty("contractsMainSource", rootProject.file("contracts/src/main").absolutePath)
     systemProperty("appManifest", rootProject.file("app/src/main/AndroidManifest.xml").absolutePath)
+    systemProperty("ingestManifest", rootProject.file("notification-ingest/src/main/AndroidManifest.xml").absolutePath)
 }

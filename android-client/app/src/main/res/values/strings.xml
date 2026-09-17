@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Project Zero</string>
+    <string name="notification_access_title">Notification access</string>
+    <string name="notification_access_denied">Notification access is off. The launcher stays usable.</string>
 </resources>

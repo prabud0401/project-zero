@@ -1,0 +1,432 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "b1075e5df13b791122366fc845576b8d",
+    "entities": [
+      {
+        "tableName": "events",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`eventId` TEXT NOT NULL, `revision` INTEGER NOT NULL, `profileScope` TEXT NOT NULL, `frameworkKey` TEXT NOT NULL, `sourcePackage` TEXT NOT NULL, `sourceUserSerial` INTEGER NOT NULL, `channelIdHash` TEXT, `kind` TEXT NOT NULL, `title` TEXT, `body` TEXT, `peopleTokensCsv` TEXT NOT NULL, `groupKeyHash` TEXT, `isOngoing` INTEGER NOT NULL, `isClearable` INTEGER NOT NULL, `sensitivity` TEXT NOT NULL, `contentFingerprint` TEXT NOT NULL, `postedAtEpochMs` INTEGER NOT NULL, `observedAtEpochMs` INTEGER NOT NULL, `expiresAtEpochMs` INTEGER NOT NULL, `workState` TEXT NOT NULL, `filterReason` TEXT, `cloudEligible` INTEGER NOT NULL, `hadRemoteViews` INTEGER NOT NULL, `hadSpans` INTEGER NOT NULL, `wasOversized` INTEGER NOT NULL, `hadPendingIntent` INTEGER NOT NULL, `tombstoned` INTEGER NOT NULL, `tombstonedAtEpochMs` INTEGER, PRIMARY KEY(`eventId`))",
+        "fields": [
+          {
+            "fieldPath": "eventId",
+            "columnName": "eventId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "revision",
+            "columnName": "revision",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "profileScope",
+            "columnName": "profileScope",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "frameworkKey",
+            "columnName": "frameworkKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourcePackage",
+            "columnName": "sourcePackage",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceUserSerial",
+            "columnName": "sourceUserSerial",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "channelIdHash",
+            "columnName": "channelIdHash",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "kind",
+            "columnName": "kind",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "body",
+            "columnName": "body",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "peopleTokensCsv",
+            "columnName": "peopleTokensCsv",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "groupKeyHash",
+            "columnName": "groupKeyHash",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "isOngoing",
+            "columnName": "isOngoing",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isClearable",
+            "columnName": "isClearable",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sensitivity",
+            "columnName": "sensitivity",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "contentFingerprint",
+            "columnName": "contentFingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "postedAtEpochMs",
+            "columnName": "postedAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "observedAtEpochMs",
+            "columnName": "observedAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "expiresAtEpochMs",
+            "columnName": "expiresAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "workState",
+            "columnName": "workState",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "filterReason",
+            "columnName": "filterReason",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "cloudEligible",
+            "columnName": "cloudEligible",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hadRemoteViews",
+            "columnName": "hadRemoteViews",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hadSpans",
+            "columnName": "hadSpans",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "wasOversized",
+            "columnName": "wasOversized",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hadPendingIntent",
+            "columnName": "hadPendingIntent",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tombstoned",
+            "columnName": "tombstoned",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tombstonedAtEpochMs",
+            "columnName": "tombstonedAtEpochMs",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "eventId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_events_profileScope_frameworkKey",
+            "unique": false,
+            "columnNames": [
+              "profileScope",
+              "frameworkKey"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_events_profileScope_frameworkKey` ON `${TABLE_NAME}` (`profileScope`, `frameworkKey`)"
+          },
+          {
+            "name": "index_events_eventId",
+            "unique": true,
+            "columnNames": [
+              "eventId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_events_eventId` ON `${TABLE_NAME}` (`eventId`)"
+          },
+          {
+            "name": "index_events_expiresAtEpochMs",
+            "unique": false,
+            "columnNames": [
+              "expiresAtEpochMs"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_events_expiresAtEpochMs` ON `${TABLE_NAME}` (`expiresAtEpochMs`)"
+          },
+          {
+            "name": "index_events_sourceUserSerial",
+            "unique": false,
+            "columnNames": [
+              "sourceUserSerial"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_events_sourceUserSerial` ON `${TABLE_NAME}` (`sourceUserSerial`)"
+          }
+        ]
+      },
+      {
+        "tableName": "tombstones",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`profileScope` TEXT NOT NULL, `eventId` TEXT NOT NULL, `frameworkKey` TEXT NOT NULL, `tombstonedAtEpochMs` INTEGER NOT NULL, PRIMARY KEY(`profileScope`, `eventId`))",
+        "fields": [
+          {
+            "fieldPath": "profileScope",
+            "columnName": "profileScope",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "eventId",
+            "columnName": "eventId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "frameworkKey",
+            "columnName": "frameworkKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tombstonedAtEpochMs",
+            "columnName": "tombstonedAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "profileScope",
+            "eventId"
+          ]
+        }
+      },
+      {
+        "tableName": "clusters",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`clusterId` TEXT NOT NULL, `profileScope` TEXT NOT NULL, `sourcePackage` TEXT NOT NULL, `sourceUserSerial` INTEGER NOT NULL, `groupOrKind` TEXT NOT NULL, `baseRevision` INTEGER NOT NULL, `headline` TEXT NOT NULL, `summary` TEXT NOT NULL, `kind` TEXT NOT NULL, `priority` INTEGER NOT NULL, `unreadCount` INTEGER NOT NULL, `generatedBy` TEXT NOT NULL, `confidence` REAL NOT NULL, `generatedAtEpochMs` INTEGER NOT NULL, `expiresAtEpochMs` INTEGER NOT NULL, PRIMARY KEY(`clusterId`))",
+        "fields": [
+          {
+            "fieldPath": "clusterId",
+            "columnName": "clusterId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "profileScope",
+            "columnName": "profileScope",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourcePackage",
+            "columnName": "sourcePackage",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceUserSerial",
+            "columnName": "sourceUserSerial",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "groupOrKind",
+            "columnName": "groupOrKind",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "baseRevision",
+            "columnName": "baseRevision",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "headline",
+            "columnName": "headline",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "summary",
+            "columnName": "summary",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "kind",
+            "columnName": "kind",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "priority",
+            "columnName": "priority",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "unreadCount",
+            "columnName": "unreadCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "generatedBy",
+            "columnName": "generatedBy",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "confidence",
+            "columnName": "confidence",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "generatedAtEpochMs",
+            "columnName": "generatedAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "expiresAtEpochMs",
+            "columnName": "expiresAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "clusterId"
+          ]
+        }
+      },
+      {
+        "tableName": "cluster_members",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`clusterId` TEXT NOT NULL, `eventId` TEXT NOT NULL, PRIMARY KEY(`clusterId`, `eventId`))",
+        "fields": [
+          {
+            "fieldPath": "clusterId",
+            "columnName": "clusterId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "eventId",
+            "columnName": "eventId",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "clusterId",
+            "eventId"
+          ]
+        }
+      },
+      {
+        "tableName": "store_meta",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`profileScope` TEXT NOT NULL, `snapshotRevision` INTEGER NOT NULL, `dataEpoch` INTEGER NOT NULL, `historyIncomplete` INTEGER NOT NULL, `listenerDisconnected` INTEGER NOT NULL, PRIMARY KEY(`profileScope`))",
+        "fields": [
+          {
+            "fieldPath": "profileScope",
+            "columnName": "profileScope",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "snapshotRevision",
+            "columnName": "snapshotRevision",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dataEpoch",
+            "columnName": "dataEpoch",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "historyIncomplete",
+            "columnName": "historyIncomplete",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "listenerDisconnected",
+            "columnName": "listenerDisconnected",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "profileScope"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b1075e5df13b791122366fc845576b8d')"
+    ]
+  }
+}
